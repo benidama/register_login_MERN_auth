@@ -18,7 +18,7 @@ app.use((req, res, next) => {
 // routes
 app.use("/api/posts", postRoutes);
 
-// connect to db
+// connect to db where you can database from server side
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
