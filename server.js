@@ -1,4 +1,6 @@
 import express from "express";
+import router from "./routes/route.js";
+
 const PORT = 3000;
 
 // express app
@@ -11,8 +13,15 @@ app.use((req, res, next) => {
   console.log(req.path, req.method);
   next();
 });
-
+//Home pagee
 app.get("/", (req, res) => res.send("Hello Express! Welcome to the server."));
+
+//About page
+app.get("/user", (req, res) => {
+  res.send("This is the about page.");
+});
+
+app.use("/user", router);
 
 app.listen(PORT, () => {
   console.log("listening for requests on port", PORT);
