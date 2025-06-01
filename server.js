@@ -15,6 +15,7 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get("/user", (req, res) => res.send("Hello Express!"));
 // routes
 app.use("/api/posts", postRoutes);
 
