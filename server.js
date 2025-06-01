@@ -1,8 +1,5 @@
-require("dotenv").config();
-
-const express = require("express");
-// const mongoose = require("mongoose");
-const postRoutes = require("./routes/posts");
+import express from "express";
+const PORT = 3000;
 
 // express app
 const app = express();
@@ -15,20 +12,8 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get("/user", (req, res) => res.send("Hello Express!"));
-// routes
-app.use("/api/posts", postRoutes);
+app.get("/", (req, res) => res.send("Hello Express! Welcome to the server."));
 
-// connect to db where you can database from server side
-// mongoose
-//   .connect(process.env.MONGO_URI)
-//   .then(() => {
-//     console.log("connected to database");
-// listen to port
-app.listen(process.env.PORT, () => {
-  console.log("listening for requests on port", process.env.PORT);
+app.listen(PORT, () => {
+  console.log("listening for requests on port", PORT);
 });
-// })
-// .catch((err) => {
-//   console.log(err);
-// });
