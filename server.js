@@ -31,6 +31,21 @@ app.post("/users", (req, res) => {
   });
 });
 
+app.put("/users/:id", (req, res) => {
+  const userId = req.params.id;
+  const { name, email } = req.body;
+  res.json({
+    message: `This is the put request for user with ID: ${userId}. Name: ${name}, Email: ${email}`,
+  });
+});
+
+app.delete("/users/:id", (req, res) => {
+  const userId = req.params.id;
+  res.json({
+    message: `This is the delete request for user with ID: ${userId}`,
+  });
+});
+
 app.listen(PORT, () => {
   console.log("listening for requests on port", PORT);
 });
