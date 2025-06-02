@@ -13,7 +13,8 @@ app.use((req, res, next) => {
   console.log(req.path, req.method);
   next();
 });
-//Home pagee
+
+//Home page
 app.get("/", (req, res) => res.send("Hello Express! Welcome to the server."));
 
 //About page
@@ -22,6 +23,13 @@ app.get("/user", (req, res) => {
 });
 
 app.use("/user", router);
+app.post("/users", (req, res) => {
+  console.log(req.body);
+  const { name, email } = req.body;
+  res.json({
+    message: `This is the post request. Name: ${name}, Email: ${email}`,
+  });
+});
 
 app.listen(PORT, () => {
   console.log("listening for requests on port", PORT);
