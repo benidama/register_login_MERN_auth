@@ -9,20 +9,37 @@ const app = express();
 // middleware
 app.use(express.json());
 
-app.use((req, res, next) => {
-  console.log(req.path, req.method);
+app.use("/welcome", (req, res, next) => {
+  console.log("A new request received at" + Date.now());
   next();
 });
-
+app.get("/welcome", (req, res) => {
+  res.send("Welcome to the Express server!");
+});
 //Home page
 app.get("/", (req, res) => res.send("Hello Express! Welcome to the server."));
 
 //About page
-app.get("/user", (req, res) => {
-  res.send("This is the about page.");
+app.get("/things/:name/:id([0-9]{5})", (req, res) => {
+  const { name, id } = req.params;
+  res.json({ id, name });
 });
+//catch all route
+// app.get("*", (req, res) => {
+//   res.status(404).send("Page not found");
+// });
 
 app.use("/user", router);
+
+app.get("/error", (req, res) => {
+  throw new Error("This is an error");
+});
+
+app.use((err, req, res, next) => {
+  console.log(err.message);
+  res.send("internal server error");
+});
+
 app.post("/users", (req, res) => {
   console.log(req.body);
   const { name, email } = req.body;
