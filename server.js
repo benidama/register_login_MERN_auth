@@ -40,6 +40,22 @@ app.use((err, req, res, next) => {
   res.send("internal server error");
 });
 
+//set EJS as view engine
+app.set("view engine", "ejs");
+
+app.get("/text", (req, res) => {
+  const userName = "John Doe";
+  res.render("index", { userName });
+});
+
+app.get("/seconds", (req, res) => {
+  const htmlContent = "<strong>This is bold text</strong>";
+  res.render("second", { content: htmlContent });
+});
+
+app.use("/public", express.static("public"));
+app.use("/image", express.static("images"));
+// CRUD operations
 app.post("/users", (req, res) => {
   console.log(req.body);
   const { name, email } = req.body;
