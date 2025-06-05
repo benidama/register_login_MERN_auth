@@ -9,10 +9,10 @@ const app = express();
 // middleware
 app.use(express.json());
 
-app.use("/welcome", (req, res, next) => {
-  console.log("A new request received at" + Date.now());
-  next();
-});
+// app.use("/welcome", (req, res, next) => {
+//   console.log("A new request received at" + Date.now());
+//   next();
+// });
 app.get("/welcome", (req, res) => {
   res.send("Welcome to the Express server!");
 });
@@ -55,6 +55,7 @@ app.get("/seconds", (req, res) => {
 
 app.use("/public", express.static("public"));
 app.use("/image", express.static("images"));
+
 // CRUD operations
 app.post("/users", (req, res) => {
   console.log(req.body);
