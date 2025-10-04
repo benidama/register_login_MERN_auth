@@ -1,21 +1,30 @@
 import { connect } from 'mongoose';
 import User from '../models/User.js';
+import dotenv from 'dotenv';
 
-const MONGO_URI = "mongodb+srv://benidama:Estote22@cluster0.53bfwb8.mongodb.net";
+dotenv.config();
 
 const connectDB = async () => {
   try {
-    await connect(MONGO_URI);
+    if (!process.env.MONGO_URI) {
+      throw new Error('MONGO_URI environment variable is not defined');
+    }
+    
+    await connect(process.env.MONGO_URI);
     console.log('MongoDB Connected Successfully');
 
-    await User.createCollection();
-    console.log('User collection created successfully');
+    try {
+      await User.createCollection();
+      console.log('User collection created successfully');
+    } catch (collectionErr) {
+      if (!collectionErr.message?.includes('already exists')) {
+        console.error('Error creating User collection:', collectionErr);
+      }
+    }
   } catch (err) {
-    console.error('MongoDB Connection Failed:', err.message);
+    console.error('MongoDB Connection Failed:', err);
     process.exit(1);
   }
 };
-
-connectDB();
 
 export default connectDB;
