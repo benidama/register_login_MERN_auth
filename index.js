@@ -21,6 +21,16 @@ const app = express();
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// JSON parsing error handler
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    console.error('JSON Parse Error:', err.message);
+    console.error('Request body:', req.body);
+    return res.status(400).json({ message: 'Invalid JSON format' });
+  }
+  next(err);
+});
+
 app.use(session({
   secret: process.env.SESSION_SECRET || 'fallback-secret-key',
   resave: false,
@@ -31,6 +41,10 @@ app.use(session({
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
+
+app.get('/', (req, res) => {
+  res.json({ message: 'Server is running' });
+});
 
 app.use('/api/auth', authRoutes);
 

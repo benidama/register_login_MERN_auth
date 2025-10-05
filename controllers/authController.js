@@ -85,10 +85,10 @@ export async function verifyOTP(req, res) {
             return res.status(400).json({ message: 'Invalid or expired OTP' });
         }
 
-        user.isVerified = true;
-        user.otp = undefined;
-        user.otpExpiry = undefined;
-        await user.save();
+        await User.findByIdAndUpdate(user._id, {
+            isVerified: true,
+            $unset: { otp: 1, otpExpiry: 1 }
+        }, { runValidators: false });
 
         res.json({ message: 'Email verified successfully. You can now log in.' });
     } catch (error) {
@@ -172,6 +172,75 @@ export function logout(req, res) {
         res.clearCookie(process.env.SESSION_COOKIE_NAME || 'connect.sid');
         res.json({ message: 'Logged out successfully' });
     });
+}
+
+// Request Password Reset
+export async function requestPasswordReset(req, res) {
+    try {
+        const { email } = req.body;
+        
+        if (!email) {
+            return res.status(400).json({ message: 'Email is required' });
+        }
+        
+        const user = await User.findOne({ email });
+        if (!user) return res.status(400).json({ message: 'User not found' });
+
+        const otp = generateOTP();
+        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+        await User.findByIdAndUpdate(user._id, {
+            otp,
+            otpExpiry
+        }, { runValidators: false });
+
+        try {
+            await transporter.sendMail({
+                from: process.env.EMAIL_USER,
+                to: email,
+                subject: 'Password Reset OTP',
+                text: `Your password reset OTP is: ${otp}`
+            });
+        } catch (emailError) {
+            console.error('Email sending failed:', emailError);
+            return res.status(500).json({ message: 'Failed to send reset email' });
+        }
+
+        res.json({ message: 'Password reset OTP sent to email' });
+    } catch (error) {
+        console.error('Password reset request error:', error);
+        res.status(500).json({ message: 'Error requesting password reset' });
+    }
+}
+
+// Reset Password
+export async function resetPassword(req, res) {
+    try {
+        const { email, otp, newPassword } = req.body;
+        
+        if (!email || !otp || !newPassword) {
+            return res.status(400).json({ message: 'Email, OTP, and new password are required' });
+        }
+        
+        const user = await User.findOne({ email });
+        if (!user) return res.status(400).json({ message: 'User not found' });
+
+        if (user.otp !== otp || user.otpExpiry < new Date()) {
+            return res.status(400).json({ message: 'Invalid or expired OTP' });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 12);
+        
+        await User.findByIdAndUpdate(user._id, {
+            password: hashedPassword,
+            $unset: { otp: 1, otpExpiry: 1 }
+        }, { runValidators: false });
+
+        res.json({ message: 'Password reset successfully' });
+    } catch (error) {
+        console.error('Password reset error:', error);
+        res.status(500).json({ message: 'Error resetting password' });
+    }
 }
 
 // Dashboard (Protected Route)
