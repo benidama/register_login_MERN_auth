@@ -28,10 +28,15 @@ const generateOTP = () => randomInt(100000, 999999).toString();
 // Register User and Send OTP
 export async function register(req, res) {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, phone, password, role } = req.body;
         
-        if (!name || !email || !password) {
+        if (!name || !email || !phone || !password || !role) {
             return res.status(400).json({ message: 'All fields are required' });
+        }
+        
+        console.log('Received role:', role, 'Type:', typeof role);
+        if (!['Client', 'Worker', 'Leader'].includes(role)) {
+            return res.status(400).json({ message: `Invalid role selected. Received: '${role}'. Expected: Client, Worker, or Leader` });
         }
         
         const user = await User.findOne({ email });
@@ -41,7 +46,7 @@ export async function register(req, res) {
         const otp = generateOTP();
         const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
-        const newUser = new User({ name, email, password: hashedPassword, otp, otpExpiry });
+        const newUser = new User({ name, email, phone, password: hashedPassword, role, otp, otpExpiry });
         await newUser.save();
 
         try {
@@ -154,8 +159,17 @@ export async function login(req, res) {
             return res.status(400).json({ message: 'Email not verified. Please verify OTP.' });
         }
 
-        req.session.user = { id: user._id, email: user.email, name: user.name };
-        res.json({ message: 'Login successful' });
+        req.session.user = { id: user._id, email: user.email, name: user.name, phone: user.phone, role: user.role };
+        res.json({ 
+            message: 'Login successful',
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                role: user.role
+            }
+        });
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ message: 'Error logging in' });
@@ -243,16 +257,125 @@ export async function resetPassword(req, res) {
     }
 }
 
+// Update User Profile
+export async function updateProfile(req, res) {
+    try {
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Not authenticated' });
+        }
+
+        const { name, phone, role } = req.body;
+        const userId = req.session.user.id;
+        
+        const updateData = {};
+        if (name) updateData.name = name;
+        if (phone) updateData.phone = phone;
+        if (role && ['Client', 'Worker', 'Leader'].includes(role)) updateData.role = role;
+
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({ message: 'No valid fields to update' });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(userId, updateData, { 
+            new: true, 
+            runValidators: true 
+        }).select('-password -otp -otpExpiry');
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        req.session.user = { 
+            id: updatedUser._id, 
+            email: updatedUser.email, 
+            name: updatedUser.name, 
+            phone: updatedUser.phone, 
+            role: updatedUser.role 
+        };
+
+        res.json({ 
+            message: 'Profile updated successfully',
+            user: {
+                id: updatedUser._id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                phone: updatedUser.phone,
+                role: updatedUser.role
+            }
+        });
+    } catch (error) {
+        console.error('Profile update error:', error);
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ message: error.message });
+        }
+        res.status(500).json({ message: 'Error updating profile' });
+    }
+}
+
 // Dashboard (Protected Route)
 export async function dashboard(req, res) {
     try {
         if (!req.session.user) {
             return res.status(401).json({ message: 'Unauthorized access' });
         }
-        res.json({ message: `Welcome to the dashboard, ${req.session.user.name}` });
+        res.json({ 
+            message: `Welcome to the dashboard, ${req.session.user.name}`,
+            user: req.session.user
+        });
     } catch (error) {
         console.error('Dashboard error:', error);
         res.status(500).json({ message: 'Error accessing dashboard' });
+    }
+}
+
+// Client Dashboard
+export async function clientDashboard(req, res) {
+    try {
+        if (!req.session.user || req.session.user.role !== 'Client') {
+            return res.status(403).json({ message: 'Access denied. Client role required.' });
+        }
+        res.json({ 
+            message: `Welcome to Client Dashboard, ${req.session.user.name}`,
+            role: 'Client',
+            features: ['View Services', 'Book Appointments', 'Track Orders']
+        });
+    } catch (error) {
+        console.error('Client dashboard error:', error);
+        res.status(500).json({ message: 'Error accessing client dashboard' });
+    }
+}
+
+// Worker Dashboard
+export async function workerDashboard(req, res) {
+    try {
+        if (!req.session.user || req.session.user.role !== 'Worker') {
+            return res.status(403).json({ message: 'Access denied. Worker role required.' });
+        }
+        res.json({ 
+            message: `Welcome to Worker Dashboard, ${req.session.user.name}`,
+            role: 'Worker',
+            features: ['Manage Tasks', 'Update Status', 'View Assignments']
+        });
+    } catch (error) {
+        console.error('Worker dashboard error:', error);
+        res.status(500).json({ message: 'Error accessing worker dashboard' });
+    }
+}
+
+// Leader Dashboard
+export async function leaderDashboard(req, res) {
+    try {
+        if (!req.session.user || req.session.user.role !== 'Leader') {
+            return res.status(403).json({ message: 'Access denied. Leader role required.' });
+        }
+        res.json({ 
+            message: `Welcome to Leader Dashboard, ${req.session.user.name}`,
+            role: 'Leader',
+            features: ['Manage Team', 'View Reports', 'Assign Tasks', 'Monitor Performance']
+        });
+    } catch (error) {
+        console.error('Leader dashboard error:', error);
+        res.status(500).json({ message: 'Error accessing leader dashboard' });
     }
 }
  
