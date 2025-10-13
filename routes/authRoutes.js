@@ -1,5 +1,5 @@
 import express from 'express';
-import { register, verifyOTP, resendOTP, login, logout, requestPasswordReset, resetPassword, updateProfile } from '../controllers/authController.js';
+import { register, verifyOTP, resendOTP, login, logout, requestPasswordReset, resetPassword, updateProfile, googleAuth, googleCallback } from '../controllers/authController.js';
 import authMiddleware from '../middleware/authmiddleware.js';
 
 const router = express.Router();
@@ -12,6 +12,8 @@ router.post('/logout', logout);
 router.post('/request-password-reset', requestPasswordReset);
 router.post('/reset-password', resetPassword);
 router.put('/update-profile', authMiddleware, updateProfile);
+router.get('/google', googleAuth);
+router.get('/google/callback', googleCallback);
 
 
 export default router;
