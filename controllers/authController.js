@@ -3,8 +3,7 @@ import { createTransport } from 'nodemailer';
 import { randomInt } from 'crypto';
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
-import { OAuth2Client } from 'google-auth-library';
-import axios from 'axios';
+
 
 dotenv.config();
 
@@ -314,50 +313,7 @@ export async function updateProfile(req, res) {
     }
 }
 
-// Google OAuth
-const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-export async function googleAuth(req, res) {
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.GOOGLE_CLIENT_ID}&redirect_uri=${process.env.GOOGLE_REDIRECT_URI}&response_type=code&scope=email profile`;
-    res.redirect(authUrl);
-}
-
-export async function googleCallback(req, res) {
-    try {
-        const { code } = req.query;
-        const { data } = await axios.post('https://oauth2.googleapis.com/token', {
-            client_id: process.env.GOOGLE_CLIENT_ID,
-            client_secret: process.env.GOOGLE_CLIENT_SECRET,
-            code,
-            grant_type: 'authorization_code',
-            redirect_uri: process.env.GOOGLE_REDIRECT_URI,
-        });
-        
-        const { access_token } = data;
-        const { data: profile } = await axios.get('https://www.googleapis.com/oauth2/v1/userinfo', {
-            headers: { Authorization: `Bearer ${access_token}` },
-        });
-        
-        let user = await User.findOne({ email: profile.email });
-        if (!user) {
-            user = new User({
-                name: profile.name,
-                email: profile.email,
-                phone: '',
-                password: await bcrypt.hash(Math.random().toString(36), 12),
-                role: 'Client',
-                isVerified: true
-            });
-            await user.save();
-        }
-        
-        req.session.user = { id: user._id, email: user.email, name: user.name, phone: user.phone, role: user.role };
-        res.redirect('/dashboard');
-    } catch (error) {
-        console.error('Google auth error:', error);
-        res.status(500).json({ message: 'Google authentication failed' });
-    }
-}
 
 // Dashboard (Protected Route)
 export async function dashboard(req, res) {
