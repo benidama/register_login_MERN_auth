@@ -4,19 +4,22 @@ import authMiddleware from '../middleware/authmiddleware.js';
 
 const router = express.Router();
 
-router.post('/register', register);
-router.get('/register', (req, res) => res.json({ message: 'Register endpoint is working. Use POST method to register.' }));
-router.post('/verify-otp', verifyOTP);
-router.post('/resend-otp', resendOTP);
-router.post('/login', login);
-router.post('/logout', logout);
-router.post('/request-password-reset', requestPasswordReset);
-router.post('/reset-password', resetPassword);
-router.put('/update-profile', authMiddleware, updateProfile);
-router.get('/dashboard', authMiddleware, dashboard);
-router.get('/client-dashboard', authMiddleware, clientDashboard);
-router.get('/worker-dashboard', authMiddleware, workerDashboard);
-router.get('/leader-dashboard', authMiddleware, leaderDashboard);
+// Authentication routes
+router.post('/api/auth/register', register);
+router.get('/api/auth/register', (req, res) => res.json({ message: 'Register endpoint is working. Use POST method to register.' }));
+router.post('/api/auth/verify-otp', verifyOTP);
+router.post('/api/auth/resend-otp', resendOTP);
+router.post('/api/auth/login', login);
+router.post('/api/auth/logout', logout);
+router.post('/api/auth/request-password-reset', requestPasswordReset);
+router.post('/api/auth/reset-password', resetPassword);
+router.put('/api/auth/update-profile', authMiddleware, updateProfile);
+
+// Dashboard routes
+router.get('/api/dashboard', authMiddleware, dashboard);
+router.get('/api/client-dashboard', authMiddleware, clientDashboard);
+router.get('/api/worker-dashboard', authMiddleware, workerDashboard);
+router.get('/api/leader-dashboard', authMiddleware, leaderDashboard);
 
 
 

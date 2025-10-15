@@ -30,9 +30,10 @@ const UserSchema = new Schema({
         enum: ['Client', 'Worker', 'Leader'],
         default: 'Client'
     },
-    otp: { type: String }, // OTP for verification
-    otpExpiry: { type: Date }, // Expiry time for OTP
-    isVerified: { type: Boolean, default: false } // Email verification status
+    otp: { type: String }, 
+    otpExpiry: { type: Date }, 
+    isVerified: { type: Boolean, default: false }, 
+    createdAt: { type: Date, default: Date.now } // Account creation date
 });
 
 const User = model('User', UserSchema);

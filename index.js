@@ -58,7 +58,8 @@ app.get('/', (req, res) => {
   res.json({ message: 'Server is running' });
 });
 
-app.use('/api/auth', authRoutes);
+app.use('/', authRoutes);
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {

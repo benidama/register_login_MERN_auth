@@ -47,7 +47,7 @@ export async function register(req, res) {
         const otp = generateOTP();
         const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
-        const newUser = new User({ name, email, phone, password: hashedPassword, role, otp, otpExpiry });
+        const newUser = new User({ name, email, phone, password: hashedPassword, role, otp, otpExpiry, createdAt: new Date() });
         await newUser.save();
 
         try {
@@ -168,7 +168,8 @@ export async function login(req, res) {
                 name: user.name,
                 email: user.email,
                 phone: user.phone,
-                role: user.role
+                role: user.role,
+                createdAt: user.createdAt
             }
         });
     } catch (error) {
