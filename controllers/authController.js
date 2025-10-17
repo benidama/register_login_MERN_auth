@@ -314,8 +314,6 @@ export async function updateProfile(req, res) {
     }
 }
 
-
-
 // Dashboard (Protected Route)
 export async function dashboard(req, res) {
     try {
@@ -341,7 +339,7 @@ export async function clientDashboard(req, res) {
         res.json({ 
             message: `Welcome to Client Dashboard, ${req.session.user.name}`,
             role: 'Client',
-            features: ['View Services', 'Book Appointments', 'Track Orders']
+            features: ['View Services', 'Book Appointments', 'Track Orders', 'Create Blog Posts', 'Manage My Posts']
         });
     } catch (error) {
         console.error('Client dashboard error:', error);
@@ -358,7 +356,7 @@ export async function workerDashboard(req, res) {
         res.json({ 
             message: `Welcome to Worker Dashboard, ${req.session.user.name}`,
             role: 'Worker',
-            features: ['Manage Tasks', 'Update Status', 'View Assignments']
+            features: ['Manage Tasks', 'Update Status', 'View Assignments', 'Create Blog Posts', 'Manage My Posts']
         });
     } catch (error) {
         console.error('Worker dashboard error:', error);
@@ -375,7 +373,7 @@ export async function leaderDashboard(req, res) {
         res.json({ 
             message: `Welcome to Leader Dashboard, ${req.session.user.name}`,
             role: 'Leader',
-            features: ['Manage Team', 'View Reports', 'Assign Tasks', 'Monitor Performance']
+            features: ['Manage Team', 'View Reports', 'Assign Tasks', 'Monitor Performance', 'Create Blog Posts', 'Manage My Posts']
         });
     } catch (error) {
         console.error('Leader dashboard error:', error);

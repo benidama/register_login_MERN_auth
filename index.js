@@ -3,6 +3,7 @@ import cors from 'cors';
 import connectDB from './config/db.js';
 import session from 'express-session';
 import authRoutes from './routes/authRoutes.js';
+import postRoutes from './routes/postRoutes.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -59,6 +60,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/', authRoutes);
+app.use('/', postRoutes);
 
 
 // Error handling middleware
