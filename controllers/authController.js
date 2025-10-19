@@ -31,13 +31,52 @@ export async function register(req, res) {
     try {
         const { name, email, phone, password, role } = req.body;
         
+        // Check if all fields are provided
         if (!name || !email || !phone || !password || !role) {
             return res.status(400).json({ message: 'All fields are required' });
         }
         
+        // Validate name
+        if (name.trim().length < 2) {
+            return res.status(400).json({ message: 'Name must be at least 2 characters long' });
+        }
+        if (!/^[a-zA-Z\s]+$/.test(name.trim())) {
+            return res.status(400).json({ message: 'Name can only contain letters and spaces' });
+        }
+        
+        // Validate email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ message: 'Please enter a valid email address' });
+        }
+        
+        // Validate phone (must start with country code)
+        const phoneRegex = /^\+[1-9]\d{1,14}$/;
+        if (!phoneRegex.test(phone)) {
+            return res.status(400).json({ message: 'Phone number must start with country code (e.g., +1234567890)' });
+        }
+        
+        // Validate password strength
+        if (password.length < 8) {
+            return res.status(400).json({ message: 'Password must be at least 8 characters long' });
+        }
+        if (!/(?=.*[a-z])/.test(password)) {
+            return res.status(400).json({ message: 'Password must contain at least one lowercase letter' });
+        }
+        if (!/(?=.*[A-Z])/.test(password)) {
+            return res.status(400).json({ message: 'Password must contain at least one uppercase letter' });
+        }
+        if (!/(?=.*\d)/.test(password)) {
+            return res.status(400).json({ message: 'Password must contain at least one number' });
+        }
+        if (!/(?=.*[@$!%*?&])/.test(password)) {
+            return res.status(400).json({ message: 'Password must contain at least one special character (@$!%*?&)' });
+        }
+        
+        // Validate role
         console.log('Received role:', role, 'Type:', typeof role);
         if (!['Client', 'Worker', 'Leader'].includes(role)) {
-            return res.status(400).json({ message: `Invalid role selected. Received: '${role}'. Expected: Client, Worker, or Leader` });
+            return res.status(400).json({ message: `Invalid role selected. Expected: Client, Worker, or Leader` });
         }
         
         const user = await User.findOne({ email });
