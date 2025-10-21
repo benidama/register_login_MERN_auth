@@ -305,13 +305,14 @@ export async function updateProfile(req, res) {
             return res.status(401).json({ message: 'Not authenticated' });
         }
 
-        const { name, phone, role } = req.body;
+        const { name, phone, role, profileImage } = req.body;
         const userId = req.session.user.id;
         
         const updateData = {};
         if (name) updateData.name = name;
         if (phone) updateData.phone = phone;
         if (role && ['Client', 'Worker', 'Leader'].includes(role)) updateData.role = role;
+        if (profileImage !== undefined) updateData.profileImage = profileImage;
 
         if (Object.keys(updateData).length === 0) {
             return res.status(400).json({ message: 'No valid fields to update' });
@@ -341,7 +342,8 @@ export async function updateProfile(req, res) {
                 name: updatedUser.name,
                 email: updatedUser.email,
                 phone: updatedUser.phone,
-                role: updatedUser.role
+                role: updatedUser.role,
+                profileImage: updatedUser.profileImage
             }
         });
     } catch (error) {

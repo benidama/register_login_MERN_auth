@@ -3,7 +3,7 @@ import Post from '../models/Post.js';
 // Create a new post
 export async function createPost(req, res) {
     try {
-        const { title, content } = req.body;
+        const { title, content, image } = req.body;
         
         if (!title || !content) {
             return res.status(400).json({ message: 'Title and content are required' });
@@ -12,11 +12,12 @@ export async function createPost(req, res) {
         const post = new Post({
             title,
             content,
+            image: image || null,
             author: req.session.user.id
         });
 
         await post.save();
-        await post.populate('author', 'name email');
+        await post.populate('author', 'name email profileImage');
 
         res.status(201).json({
             message: 'Post created successfully',
@@ -32,7 +33,7 @@ export async function createPost(req, res) {
 export async function getAllPosts(req, res) {
     try {
         const posts = await Post.find()
-            .populate('author', 'name email')
+            .populate('author', 'name email profileImage')
             .sort({ createdAt: -1 });
 
         res.json({ posts });
@@ -46,7 +47,7 @@ export async function getAllPosts(req, res) {
 export async function getPostById(req, res) {
     try {
         const post = await Post.findById(req.params.id)
-            .populate('author', 'name email');
+            .populate('author', 'name email profileImage');
 
         if (!post) {
             return res.status(404).json({ message: 'Post not found' });
@@ -62,7 +63,7 @@ export async function getPostById(req, res) {
 // Update post (only author)
 export async function updatePost(req, res) {
     try {
-        const { title, content } = req.body;
+        const { title, content, image } = req.body;
         const post = await Post.findById(req.params.id);
 
         if (!post) {
@@ -76,12 +77,13 @@ export async function updatePost(req, res) {
         const updateData = {};
         if (title) updateData.title = title;
         if (content) updateData.content = content;
+        if (image !== undefined) updateData.image = image;
 
         const updatedPost = await Post.findByIdAndUpdate(
             req.params.id,
             updateData,
             { new: true, runValidators: true }
-        ).populate('author', 'name email');
+        ).populate('author', 'name email profileImage');
 
         res.json({
             message: 'Post updated successfully',

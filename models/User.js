@@ -30,6 +30,10 @@ const UserSchema = new Schema({
         enum: ['Client', 'Worker', 'Leader'],
         default: 'Client'
     },
+    profileImage: {
+        type: String, // Base64 string or URL
+        default: null
+    },
     otp: { type: String }, 
     otpExpiry: { type: Date }, 
     isVerified: { type: Boolean, default: false }, 
