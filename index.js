@@ -5,6 +5,7 @@ import session from 'express-session';
 import authRoutes from './routes/authRoutes.js';
 import postRoutes from './routes/postRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
+import multer from 'multer';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -63,6 +64,20 @@ app.get('/', (req, res) => {
 app.use('/', authRoutes);
 app.use('/', postRoutes);
 app.use('/', uploadRoutes);
+
+// Multer error handling
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ message: 'File too large. Maximum size is 5MB' });
+    }
+    return res.status(400).json({ message: err.message });
+  }
+  if (err.message === 'Only image files are allowed') {
+    return res.status(400).json({ message: err.message });
+  }
+  next(err);
+});
 
 
 // Error handling middleware

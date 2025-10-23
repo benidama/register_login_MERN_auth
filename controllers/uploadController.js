@@ -25,8 +25,11 @@ export const uploadProfileImage = upload.single('profileImage');
 
 export async function handleProfileImageUpload(req, res) {
     try {
+        console.log('File received:', req.file);
+        console.log('Body received:', req.body);
+        
         if (!req.file) {
-            return res.status(400).json({ message: 'No image file provided' });
+            return res.status(400).json({ message: 'No image file provided. Use field name "profileImage"' });
         }
 
         // Convert to base64
