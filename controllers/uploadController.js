@@ -66,3 +66,30 @@ export async function handlePostImageUpload(req, res) {
         res.status(500).json({ message: 'Error uploading post image' });
     }
 }
+
+// Upload multiple images
+export const uploadMultipleImages = upload.array('images', 10);
+
+export async function handleMultipleImagesUpload(req, res) {
+    try {
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ message: 'No image files provided' });
+        }
+
+        const images = req.files.map(file => {
+            const base64Image = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+            return {
+                url: base64Image,
+                filename: file.originalname
+            };
+        });
+
+        res.json({
+            message: 'Images uploaded successfully',
+            images
+        });
+    } catch (error) {
+        console.error('Multiple images upload error:', error);
+        res.status(500).json({ message: 'Error uploading images' });
+    }
+}

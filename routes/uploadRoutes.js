@@ -1,5 +1,5 @@
 import express from 'express';
-import { uploadProfileImage, handleProfileImageUpload, uploadPostImage, handlePostImageUpload } from '../controllers/uploadController.js';
+import { uploadProfileImage, handleProfileImageUpload, uploadPostImage, handlePostImageUpload, uploadMultipleImages, handleMultipleImagesUpload } from '../controllers/uploadController.js';
 import authMiddleware from '../middleware/authmiddleware.js';
 
 const router = express.Router();
@@ -9,5 +9,8 @@ router.post('/api/upload/profile-image', authMiddleware, uploadProfileImage, han
 
 // Upload post image
 router.post('/api/upload/post-image', authMiddleware, uploadPostImage, handlePostImageUpload);
+
+// Upload multiple images
+router.post('/api/upload/images', authMiddleware, uploadMultipleImages, handleMultipleImagesUpload);
 
 export default router;

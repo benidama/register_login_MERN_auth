@@ -99,13 +99,38 @@
                 </div>
             </div>
             <div id="dashboard-content"></div>
+            
+            <!-- Upload Images Section -->
+            <div id="upload-section" class="form-container hidden" style="margin-top: 20px;">
+                <h3>Upload Images</h3>
+                <input type="file" id="image-upload" accept="image/*" multiple>
+                <button onclick="uploadImages()">Upload Images</button>
+                <div id="uploaded-images"></div>
+            </div>
+            
+            <!-- Create Post Section -->
+            <div id="post-section" class="form-container hidden" style="margin-top: 20px;">
+                <h3>Create Post</h3>
+                <form id="postForm">
+                    <input type="text" id="post-title" placeholder="Post Title" required>
+                    <textarea id="post-content" placeholder="Post Content" rows="4" style="width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 4px; resize: vertical;" required></textarea>
+                    <input type="file" id="post-images" accept="image/*" multiple>
+                    <button type="submit">Create Post</button>
+                </form>
+            </div>
+            
+            <!-- View Posts Section -->
+            <div id="posts-section" class="form-container hidden" style="margin-top: 20px;">
+                <h3>All Posts</h3>
+                <div id="posts-container"></div>
+            </div>
         </div>
     </div>
 
     <div id="message" class="message hidden"></div>
 
     <script>
-        const API_BASE = 'http://localhost:3000/api/auth';
+        const API_BASE = 'http://localhost:3000';
         let currentEmail = '';
         let currentUser = null;
 
@@ -142,7 +167,7 @@
             };
 
             try {
-                const response = await fetch(`${API_BASE}/register`, {
+                const response = await fetch(`${API_BASE}/api/auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
@@ -168,7 +193,7 @@
             const otp = document.getElementById('otp-code').value;
 
             try {
-                const response = await fetch(`${API_BASE}/verify-otp`, {
+                const response = await fetch(`${API_BASE}/api/auth/verify-otp`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: currentEmail, otp })
@@ -195,7 +220,7 @@
             };
 
             try {
-                const response = await fetch(`${API_BASE}/login`, {
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
@@ -245,6 +270,9 @@
                         <li>Track order status</li>
                         <li>Manage profile</li>
                     </ul>
+                    <button onclick="showUploadSection()" style="margin: 10px 5px; padding: 8px 16px; background: #17a2b8;">Upload Images</button>
+                    <button onclick="showPostSection()" style="margin: 10px 5px; padding: 8px 16px; background: #28a745;">Create Post</button>
+                    <button onclick="showPostsSection()" style="margin: 10px 5px; padding: 8px 16px; background: #6f42c1;">View Posts</button>
                 `;
             } else if (user.role === 'Worker') {
                 dashboardContent += `
@@ -255,6 +283,9 @@
                         <li>Manage schedule</li>
                         <li>Submit reports</li>
                     </ul>
+                    <button onclick="showUploadSection()" style="margin: 10px 5px; padding: 8px 16px; background: #17a2b8;">Upload Images</button>
+                    <button onclick="showPostSection()" style="margin: 10px 5px; padding: 8px 16px; background: #28a745;">Create Post</button>
+                    <button onclick="showPostsSection()" style="margin: 10px 5px; padding: 8px 16px; background: #6f42c1;">View Posts</button>
                 `;
             } else if (user.role === 'Leader') {
                 dashboardContent += `
@@ -266,6 +297,9 @@
                         <li>Monitor operations</li>
                         <li>Access analytics</li>
                     </ul>
+                    <button onclick="showUploadSection()" style="margin: 10px 5px; padding: 8px 16px; background: #17a2b8;">Upload Images</button>
+                    <button onclick="showPostSection()" style="margin: 10px 5px; padding: 8px 16px; background: #28a745;">Create Post</button>
+                    <button onclick="showPostsSection()" style="margin: 10px 5px; padding: 8px 16px; background: #6f42c1;">View Posts</button>
                 `;
             }
             
@@ -292,7 +326,7 @@
             };
 
             try {
-                const response = await fetch(`${API_BASE}/update-profile`, {
+                const response = await fetch(`${API_BASE}/api/auth/update-profile`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
@@ -315,7 +349,7 @@
         // Resend OTP
         async function resendOTP() {
             try {
-                const response = await fetch(`${API_BASE}/resend-otp`, {
+                const response = await fetch(`${API_BASE}/api/auth/resend-otp`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: currentEmail })
@@ -327,21 +361,169 @@
             }
         }
 
+        // Show upload section
+        function showUploadSection() {
+            document.getElementById('upload-section').classList.remove('hidden');
+            document.getElementById('post-section').classList.add('hidden');
+        }
+
+        // Show post section
+        function showPostSection() {
+            document.getElementById('post-section').classList.remove('hidden');
+            document.getElementById('upload-section').classList.add('hidden');
+            document.getElementById('posts-section').classList.add('hidden');
+        }
+
+        // Show posts section
+        function showPostsSection() {
+            document.getElementById('posts-section').classList.remove('hidden');
+            document.getElementById('upload-section').classList.add('hidden');
+            document.getElementById('post-section').classList.add('hidden');
+            loadPosts();
+        }
+
+        // Upload Images
+        async function uploadImages() {
+            const fileInput = document.getElementById('image-upload');
+            const files = fileInput.files;
+            
+            if (files.length === 0) {
+                showMessage('Please select images to upload', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            for (let i = 0; i < files.length; i++) {
+                formData.append('images', files[i]);
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/upload/images`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('Images uploaded successfully!');
+                    displayUploadedImages(data.images);
+                    fileInput.value = '';
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Image upload failed. Please try again.', 'error');
+            }
+        }
+
+        // Display uploaded images
+        function displayUploadedImages(images) {
+            const container = document.getElementById('uploaded-images');
+            container.innerHTML = '<h4>Uploaded Images:</h4>';
+            images.forEach(image => {
+                container.innerHTML += `<img src="${image.url}" alt="${image.filename}" style="width: 100px; height: 100px; object-fit: cover; margin: 5px; border-radius: 4px;">`;
+            });
+        }
+
+        // Create Post
+        document.getElementById('postForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('post-title').value;
+            const content = document.getElementById('post-content').value;
+            const fileInput = document.getElementById('post-images');
+            
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('content', content);
+            
+            for (let i = 0; i < fileInput.files.length; i++) {
+                formData.append('images', fileInput.files[i]);
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/posts`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('Post created successfully!');
+                    document.getElementById('postForm').reset();
+                    document.getElementById('post-section').classList.add('hidden');
+                    if (!document.getElementById('posts-section').classList.contains('hidden')) {
+                        loadPosts();
+                    }
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Post creation failed. Please try again.', 'error');
+            }
+        });
+
         // Logout
         async function logout() {
             try {
-                await fetch(`${API_BASE}/logout`, {
+                await fetch(`${API_BASE}/api/auth/logout`, {
                     method: 'POST',
                     credentials: 'include'
                 });
                 document.getElementById('dashboard').classList.add('hidden');
                 document.getElementById('update-profile-form').classList.add('hidden');
+                document.getElementById('upload-section').classList.add('hidden');
+                document.getElementById('post-section').classList.add('hidden');
+                document.getElementById('posts-section').classList.add('hidden');
                 document.getElementById('login-form').classList.remove('hidden');
                 currentUser = null;
                 showMessage('Logged out successfully');
             } catch (error) {
                 showMessage('Logout failed', 'error');
             }
+        }
+
+        // Load and display posts
+        async function loadPosts() {
+            try {
+                const response = await fetch(`${API_BASE}/api/posts`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayPosts(data.posts);
+                } else {
+                    showMessage('Failed to load posts', 'error');
+                }
+            } catch (error) {
+                showMessage('Error loading posts', 'error');
+            }
+        }
+
+        // Display posts
+        function displayPosts(posts) {
+            const container = document.getElementById('posts-container');
+            
+            if (posts.length === 0) {
+                container.innerHTML = '<p>No posts available.</p>';
+                return;
+            }
+            
+            container.innerHTML = posts.map(post => {
+                const imagesHtml = post.images && post.images.length > 0 
+                    ? post.images.map(img => `<img src="${img}" alt="Post image" style="width: 100px; height: 100px; object-fit: cover; margin: 5px; border-radius: 4px;">`).join('')
+                    : '';
+                    
+                return `
+                    <div style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px; background: #f9f9f9;">
+                        <h4>${post.title}</h4>
+                        <p><strong>By:</strong> ${post.author.name}</p>
+                        <p>${post.content}</p>
+                        ${imagesHtml ? `<div style="margin-top: 10px;">${imagesHtml}</div>` : ''}
+                        <small style="color: #666;">Posted: ${new Date(post.createdAt).toLocaleDateString()}</small>
+                    </div>
+                `;
+            }).join('');
         }
     </script>
 </body>

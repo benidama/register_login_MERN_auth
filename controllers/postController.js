@@ -3,16 +3,25 @@ import Post from '../models/Post.js';
 // Create a new post
 export async function createPost(req, res) {
     try {
-        const { title, content, image } = req.body;
+        const { title, content } = req.body;
         
         if (!title || !content) {
             return res.status(400).json({ message: 'Title and content are required' });
         }
 
+        // Convert uploaded files to base64
+        const images = [];
+        if (req.files && req.files.length > 0) {
+            req.files.forEach(file => {
+                const base64Image = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+                images.push(base64Image);
+            });
+        }
+
         const post = new Post({
             title,
             content,
-            image: image || null,
+            images,
             author: req.session.user.id
         });
 
@@ -63,7 +72,7 @@ export async function getPostById(req, res) {
 // Update post (only author)
 export async function updatePost(req, res) {
     try {
-        const { title, content, image } = req.body;
+        const { title, content } = req.body;
         const post = await Post.findById(req.params.id);
 
         if (!post) {
@@ -77,7 +86,16 @@ export async function updatePost(req, res) {
         const updateData = {};
         if (title) updateData.title = title;
         if (content) updateData.content = content;
-        if (image !== undefined) updateData.image = image;
+        
+        // Handle new images if uploaded
+        if (req.files && req.files.length > 0) {
+            const images = [];
+            req.files.forEach(file => {
+                const base64Image = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+                images.push(base64Image);
+            });
+            updateData.images = images;
+        }
 
         const updatedPost = await Post.findByIdAndUpdate(
             req.params.id,
