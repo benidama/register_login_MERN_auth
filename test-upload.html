@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Upload Endpoints</title>
+</head>
+<body>
+    <h2>Test Upload Endpoints</h2>
+    
+    <h3>1. Upload Multiple Images (/api/upload/images)</h3>
+    <input type="file" id="multiple-files" multiple accept="image/*">
+    <button onclick="testMultipleUpload()">Test Multiple Upload</button>
+    
+    <h3>2. Upload Single Profile Image (/api/upload/profile-image)</h3>
+    <input type="file" id="profile-file" accept="image/*">
+    <button onclick="testProfileUpload()">Test Profile Upload</button>
+    
+    <h3>3. Upload Single Post Image (/api/upload/post-image)</h3>
+    <input type="file" id="post-file" accept="image/*">
+    <button onclick="testPostUpload()">Test Post Upload</button>
+    
+    <div id="results" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc;"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+        
+        function showResult(message, success = true) {
+            const results = document.getElementById('results');
+            results.innerHTML += `<p style="color: ${success ? 'green' : 'red'}">${message}</p>`;
+        }
+        
+        async function testMultipleUpload() {
+            const files = document.getElementById('multiple-files').files;
+            if (files.length === 0) {
+                showResult('Please select files first', false);
+                return;
+            }
+            
+            const formData = new FormData();
+            for (let file of files) {
+                formData.append('images', file);
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/test/upload/images`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                showResult(`Multiple Upload: ${response.status} - ${data.message}`, response.ok);
+            } catch (error) {
+                showResult(`Multiple Upload Error: ${error.message}`, false);
+            }
+        }
+        
+        async function testProfileUpload() {
+            const file = document.getElementById('profile-file').files[0];
+            if (!file) {
+                showResult('Please select a file first', false);
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('profileImage', file);
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/test/upload/profile-image`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                showResult(`Profile Upload: ${response.status} - ${data.message}`, response.ok);
+            } catch (error) {
+                showResult(`Profile Upload Error: ${error.message}`, false);
+            }
+        }
+        
+        async function testPostUpload() {
+            const file = document.getElementById('post-file').files[0];
+            if (!file) {
+                showResult('Please select a file first', false);
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('postImage', file);
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/test/upload/post-image`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                showResult(`Post Upload: ${response.status} - ${data.message}`, response.ok);
+            } catch (error) {
+                showResult(`Post Upload Error: ${error.message}`, false);
+            }
+        }
+    </script>
+</body>
+</html>

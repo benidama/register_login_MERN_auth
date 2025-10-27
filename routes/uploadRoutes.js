@@ -13,4 +13,9 @@ router.post('/api/upload/post-image', authMiddleware, uploadPostImage, handlePos
 // Upload multiple images
 router.post('/api/upload/images', authMiddleware, uploadMultipleImages, handleMultipleImagesUpload);
 
+// Test endpoints without authentication (for testing only)
+router.post('/api/test/upload/profile-image', uploadProfileImage, handleProfileImageUpload);
+router.post('/api/test/upload/post-image', uploadPostImage, handlePostImageUpload);
+router.post('/api/test/upload/images', uploadMultipleImages, handleMultipleImagesUpload);
+
 export default router;
