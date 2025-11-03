@@ -116,7 +116,19 @@ export async function updatePost(req, res) {
 // Delete post (only author)
 export async function deletePost(req, res) {
     try {
-        const post = await Post.findById(req.params.id);
+        const postId = req.params.id;
+        
+        // Validate ObjectId format before any database operations
+        if (!postId || postId === 'undefined' || postId === 'null' || !/^[0-9a-fA-F]{24}$/.test(postId)) {
+            return res.status(400).json({ message: 'Invalid post ID format' });
+        }
+
+        // Check if user is authenticated
+        if (!req.session.user || !req.session.user.id) {
+            return res.status(401).json({ message: 'Authentication required' });
+        }
+
+        const post = await Post.findById(postId);
 
         if (!post) {
             return res.status(404).json({ message: 'Post not found' });
@@ -126,7 +138,7 @@ export async function deletePost(req, res) {
             return res.status(403).json({ message: 'Access denied. You can only delete your own posts' });
         }
 
-        await Post.findByIdAndDelete(req.params.id);
+        await Post.findByIdAndDelete(postId);
 
         res.json({ message: 'Post deleted successfully' });
     } catch (error) {
