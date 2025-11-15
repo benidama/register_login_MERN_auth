@@ -5,6 +5,7 @@ import session from 'express-session';
 import authRoutes from './routes/authRoutes.js';
 import postRoutes from './routes/postRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
+import jobRoutes from './routes/jobRoutes.js';
 import multer from 'multer';
 import dotenv from 'dotenv';
 
@@ -64,6 +65,7 @@ app.get('/', (req, res) => {
 app.use('/', authRoutes);
 app.use('/', postRoutes);
 app.use('/', uploadRoutes);
+app.use('/', jobRoutes);
 
 // Multer error handling
 app.use((err, req, res, next) => {
@@ -86,5 +88,5 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Internal server error' });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}.`));
